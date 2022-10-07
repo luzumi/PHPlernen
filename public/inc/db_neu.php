@@ -13,16 +13,16 @@ const TABLE_NAME = 'user_review';
 $tableInfos = get_table_infos();
 $countOfRows = get_count_of_entry($tableInfos);
 $firstEntryAsArray = get_first_entry_of_query($tableInfos);
-/*$allEntriesAsResult = */
-get_all_entries_as_mysqli_result(TABLE_NAME, "vorname", "rating", "details");
+
+$allEntriesAsResult = get_all_entries_as_mysqli_result(TABLE_NAME, "vorname", "rating", "details");
 
 
 echo $countOfRows;
 foreach ($firstEntryAsArray as $result => $item) {
     echo "$result => $item <br>";
 }
-//print_all_entries($tableInfos);
-//print_all_entries($allEntriesAsResult);
+print_all_entries($tableInfos);
+print_all_entries($allEntriesAsResult);
 
 //Verbindung wird hergestellt
 function connect_database(): mysqli
@@ -72,21 +72,32 @@ function get_all_entries_as_mysqli_result(string $table_name, string...$attr)//:
     $db = connect_database();
 
     $queryString = "SELECT ";
-
-
-    //$db = connect_database();
-    $queryString = "SELECT ";
-
     for ($arg = 0; $arg < count($attr); $arg++) {
         $queryString = $queryString . $attr[$arg] . ',';
     }
-
     $queryString = substr($queryString, 0, -1) . " FROM " . TABLE_NAME;
-    echo "<br>" . $queryString;
-    $result = $db->query($queryString) or die($db->error);
 
+    $result = $db->query($queryString) or die($db->error);
+echo "+";
     close_database($db);
     return $result;
+}
+
+
+//Ausgabe der Abfrage
+function print_all_entries(mysqli_result $result) : void
+{
+    echo "<h1>übersichtlichere sauberere Ausgabe</h1>";
+
+    if ($result->num_rows) {
+        echo "<p>Daten vorhanden: Anzahl ";
+        echo $result->num_rows;
+
+        while ($row = $result->fetch_object()) {
+            echo '<br>' . $row->vorname . ' ' . $row->rating . ' ' . $row->details;
+        }
+    }
+    $result->free();
 }
 
 
